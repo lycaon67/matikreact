@@ -1,4 +1,40 @@
+.logo {
+    width: 120px;
+    height: 31px;
+    margin: 16px 28px 16px 0;
+    float: left;
+}
+
+.logo img {
+    height: 100%;
+    margin: 0px;
+    width: 160px;
+    position: relative;
+    left: -30px;
+    bottom: 15px;
+}
 .ant-dropdown-link {
-  float: right;
-  padding: 0 25px;
+    float: right;
+    /* padding: 0 25px; */
+}
+
+.trigger {
+    font-size: 18px;
+    line-height: 64px;
+    padding: 0 24px;
+    color: #fff;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+.trigger:hover {
+    color: #1890ff;
+}
+
+@media only screen and (max-width: 400px) {
+    .ant-layout-sider {
+        position: absolute !important;
+        z-index: 9999;
+        height: 100vh;
+    }
 }

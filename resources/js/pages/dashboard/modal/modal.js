@@ -10,7 +10,6 @@ const DashboardModal = props => {
             visible: false
         });
     }
-    console.log(props.state);
     let title;
     let content;
     let form;

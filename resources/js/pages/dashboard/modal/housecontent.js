@@ -1,12 +1,30 @@
 import React from "react";
 import { Form, Button, Icon, Input } from "antd";
+import axios from 'axios';
+
 const HouseContent = props => {
     const { getFieldDecorator } = props.form;
 
     
-    const handleSubmit = e => {
-      e.preventDefault();
-      console.log(e);
+	const handleSubmit = e => {
+        e.preventDefault();
+        
+        props.form.validateFields((err, values) => {
+            if(!err){
+                axios.post('/api/house', {
+                    userId: 1,
+                    houseName: values.house_name
+                })
+                .then(function (response) {
+                    props.state[1]({
+                        visible: false
+                    });
+                })
+                .catch(function (error) {
+                    console.error(error);
+                });
+            } 
+        });
     }
 
     return (
@@ -15,7 +33,7 @@ const HouseContent = props => {
                 onSubmit={handleSubmit}
                 id="addHouse">
                 <Form.Item>
-                    {getFieldDecorator("house_id", {
+                    {getFieldDecorator("house_name", {
                         rules: [
                             {
                                 required: true,

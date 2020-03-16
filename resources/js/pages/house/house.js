@@ -1,68 +1,166 @@
-import React, { useContext, useState, useEffect } from "react";
+import React, {
+    useContext,
+    useState,
+    useEffect,
+    componentDidUpdate
+} from "react";
 import HeaderContext from "../../layouts/mainlayoutcontext";
 import {
     Card,
     Icon,
+    Modal,
     List,
     Button,
     Typography,
     Row,
     Col,
-    Descriptions,
+    Spin,
     Switch,
     Breadcrumb,
-    Statistic
+    Tag,
+    Tooltip,
+    Statistic,
+    Table
 } from "antd";
+import HouseModal from "./modal/modal";
+import { useParams } from "react-router-dom";
 
 const HousePage = props => {
+    const { roomid } = useParams();
     const { navHeader, setNavHeader } = useContext(HeaderContext);
+
+    const { state, houseId } = navHeader;
+
     useEffect(() => {
-        setNavHeader({
+        setNavHeader(oldState => ({
+            ...oldState,
             state: true
-        });
+        }));
     }, []);
 
-    const data = [
+    const [modalState, setModalState] = useState({
+        details: null,
+        visible: false
+    });
+
+    const showModal = (data) => {
+        setModalState({
+            details: data,
+            visible: true
+        });
+    };
+
+    const [devices, setDevices] = useState();
+    const [ids, setIds] = useState({
+        houseid: houseId,
+        roomid: roomid
+    });
+
+    useEffect(() => {
+        setIds({ houseid: houseId, roomid: roomid });
+    }, []);
+
+    useEffect(() => {
+        dataRoom();
+    }, [ids.roomid]);
+
+    if (roomid != ids.roomid) {
+        dataRoom();
+        setIds({ houseid: houseId, roomid: roomid });
+    }
+
+    async function dataRoom() {
+        await fetch("/api/house/device/" + houseId)
+            .then(function(response) {
+                if (response.status !== 200) {
+                    return;
+                }
+                response.json().then(function(data) {
+                    setDevices(data);
+                });
+            })
+            .catch(function(err) {
+                console.log("Fetch Error :-S", err);
+            });
+    }
+
+    const showDeleteConfirm = data => {
+        let content;
+        if (data.type === "control") {
+            content =
+                "device key: " +
+                data.key +
+                " and type: " +
+                data.type +
+                " with : " +
+                data.controlsCount;
+        }
+
+        Modal.confirm({
+            title: "Are you sure delete this device?",
+            content: content,
+            okText: "Yes",
+            okType: "danger",
+            cancelText: "No",
+            onOk() {
+                console.log("OK");
+            },
+            onCancel() {
+                console.log("Cancel");
+            }
+        });
+    };
+
+    const columns = [
         {
-            title: "Title 1"
+            title: "Device Serial",
+            dataIndex: "key",
+            key: "deviceSerial",
+            render: text => <a>{text}</a>
         },
         {
-            title: "Title 2"
+            title: "Type",
+            dataIndex: "type",
+            key: "type",
+            render: text => {
+                let color;
+                if (text === "monitor") {
+                    color = "yellow";
+                } else if (text === "security") {
+                    color = "blue";
+                } else if (text === "control") {
+                    color = "red";
+                }
+                return <Tag color={color}>{text}</Tag>;
+            }
         },
         {
-            title: "Title 3"
-        },
-        {
-            title: "Title 4"
-        },
-        {
-            title: "Title 5"
-        },
-        {
-            title: "Title 6"
-        },
-        {
-            title: "Title 6"
-        },
-        {
-            title: "Title 6"
-        },
-        {
-            title: "Title 6"
-        },
-        {
-            title: "Title 6"
-        },
-        {
-            title: "Title 6"
-        },
-        {
-            title: "Title 6"
-        },
-        {
-            title: "Title 6"
+            title: "Action",
+            key: "action",
+            render: (text, record) => (
+                <span>
+                    <Tooltip placement="top" title="Edit">
+                        <Icon
+                            type="edit"
+                            theme="twoTone"
+                            onClick={() => showModal(record)}
+                            style={{ fontSize: "18px", marginRight: "5px" }}
+                        />
+                    </Tooltip>
+                    <Tooltip placement="top" title="Delete">
+                        <Icon
+                            type="delete"
+                            theme="twoTone"
+                            twoToneColor="red"
+                            onClick={value => showDeleteConfirm(record)}
+                            style={{ fontSize: "18px" }}
+                        />
+                    </Tooltip>
+                </span>
+            )
         }
     ];
+
     return (
         <>
             <Card
@@ -73,96 +171,25 @@ const HousePage = props => {
                 <Row>
                     <Col>
                         <Breadcrumb>
-                            <Breadcrumb.Item href="">
+                            <Breadcrumb.Item>
                                 <Icon type="home" />
                             </Breadcrumb.Item>
-                            <Breadcrumb.Item href="">
+                            <Breadcrumb.Item>
                                 <span>Mansion 1</span>
                             </Breadcrumb.Item>
-                            <Breadcrumb.Item>Room 1</Breadcrumb.Item>
                         </Breadcrumb>
                     </Col>
                 </Row>
                 <Row gutter={16}>
-                    <Col span={6} offset={6}>
-                        <Card
-                            style={{
-                                border: "none"
-                            }}
-                        >
-                            <Statistic
-                                title="Temperature"
-                                value={38.5}
-                                precision={2}
-                                valueStyle={{ color: "#3f8600" }}
-                                suffix="°C"
-                                style={{
-                                    textAlign: "center"
-                                }}
-                            />
-                        </Card>
+                    <Col span={24}>
+                        <Table
+                            columns={columns}
+                            dataSource={(devices || []).data}
+                        />
                     </Col>
-                    <Col span={6}>
-                        <Card
-                            style={{
-                                border: "none"
-                            }}
-                        >
-                            <Statistic
-                                title="Humidity"
-                                value={99}
-                                precision={2}
-                                valueStyle={{ color: "#cf1322" }}
-                                suffix="%"
-                                style={{
-                                    textAlign: "center"
-                                }}
-                            />
-                        </Card>
-                    </Col>
-                </Row>
-                <Row style={{ marginTop: "10px" }}>
-                    <List
-                        grid={{
-                            gutter: 16,
-                            xs: 1,
-                            sm: 2,
-                            md: 4,
-                            lg: 4,
-                            xl: 6,
-                            xxl: 3
-                        }}
-                        dataSource={data}
-                        renderItem={item => (
-                            <List.Item>
-                                <Card
-                                    style={{
-                                        textAlign: "center",
-                                        border: "none"
-                                    }}
-                                >
-                                    <span
-                                        style={{
-                                            color: "rgba(0, 0, 0, 0.45)",
-                                            display: "block",
-                                            marginBottom: "15px"
-                                        }}
-                                    >
-                                        {item.title}
-                                    </span>
-                                    <Switch
-                                        checkedChildren={<Icon type="check" />}
-                                        unCheckedChildren={
-                                            <Icon type="close" />
-                                        }
-                                        defaultChecked
-                                    />
-                                </Card>
-                            </List.Item>
-                        )}
-                    />
                 </Row>
             </Card>
+            <HouseModal state={[modalState, setModalState]} />
         </>
     );
 };

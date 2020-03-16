@@ -1,21 +1,38 @@
 import React from "react";
 import { Form, Button, Icon, Input } from "antd";
+import axios from "axios";
+
 const RoomContent = props => {
     const { getFieldDecorator } = props.form;
 
-    
     const handleSubmit = e => {
-      e.preventDefault();
-      console.log(e);
-    }
+        e.preventDefault();
+
+        props.form.validateFields((err, values) => {
+            if (!err) {
+                axios
+                    .post("/api/room", {
+                        houseId: props.state[0].houseId,
+                        roomName: values.room_name
+                    })
+                    .then(function(response) {
+                        console.log(response);
+                        props.state[1]({
+                            visible: false
+                        });
+                    })
+                    .catch(function(error) {
+                        console.log(error);
+                    });
+            }
+        });
+    };
 
     return (
         <>
-            <Form 
-                onSubmit={handleSubmit}
-                id="addRoom">
+            <Form onSubmit={handleSubmit} id="addRoom">
                 <Form.Item>
-                    {getFieldDecorator("device_id", {
+                    {getFieldDecorator("room_name", {
                         rules: [
                             {
                                 required: true,
